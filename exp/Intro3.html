@@ -11,6 +11,9 @@
         font-size: 30px;
         margin: 30px;
     }
+    #audio {
+        display: none;
+    }
     .form-check {
         width: 370px;
         margin: auto;
@@ -50,6 +53,9 @@
     <button type="button" id="speak-button"> Please click to play audio </button>
 
 
+    <audio controls id='audio' src= "{{ static audio }}" > </audio>
+
+
     <div class="speech-area">
         120 dollars <br>
         {{ player.treatment_words }} <br>
@@ -78,6 +84,7 @@
         {{ formfield player.treatment_words }}
     </div>
 
+<!--
 <script>    
     // show 播放按鈕。
     var voice;
@@ -134,4 +141,23 @@
     }
 
 </script>
+-->
+
+<script>
+    let audio = document.getElementById('audio');
+
+    $('#speak-button').click(function(){
+        audio.play();
+    })
+
+    audio.addEventListener('play', function(){
+        $speech_area = $('.speech-area');
+        $speech_area.show();
+    });
+
+    audio.addEventListener('ended', function(ev){
+        $('.show-after-speech-area').show();
+    });
+</script>
+
 {{ endblock}}

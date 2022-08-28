@@ -34,6 +34,7 @@ class Player(BasePlayer):
     treatment_words = models.StringField(initial = '') # treatment
     get_money_now_or_future = models.StringField(label = 'Please choose if you would like to receive the payment today or in the future.', widget = widgets.RadioSelect,  choices = [['now', 'I choose to receive the payment today'], ['future','I choose to receive the payment in the future']])
     get_money_now_or_future_test = models.StringField(label = 'Please choose if you would like to receive the payment today or in the future.', widget = widgets.RadioSelect, choices = [['now', 'I choose to receive the payment today'], ['future','I choose to receive the payment in the future']]) # 因為是範例，所以作答結果不記在記錄正式實驗的field
+    treatment_number = models.IntegerField()
 
     num_listen_times = models.IntegerField(initial = 0) # 聽了幾次，單位為次數 (hidden，根據使用者行為紀錄)
     decision_duration = models.FloatField(initial = 0) # 決策時長，單位為秒數 (hidden，根據使用者行為紀錄)
@@ -95,6 +96,10 @@ def creating_session(subsession):
             participant = player.participant
             pid = participant.id_in_session - 1
             player.treatment_words = Treatment.list[pid]
+            if player.treatment_words == "will be paid":
+                player.treatment_number = 1
+            else:
+                player.treatment_number = 2
 
 
 def generate_questionaire_parameters_pairs():
@@ -159,7 +164,8 @@ class Intro3(Page):
     @staticmethod
     def vars_for_template(player):
         return {
-            "treatment_words": player.treatment_words
+            "treatment_words": player.treatment_words,
+            "audio": '120_2_{}.m4a'.format(player.treatment_number)
 	    }    
     @staticmethod
     def is_displayed(player):
@@ -191,13 +197,15 @@ class GetMoneyNoworFuture(Page):
         if player.round_number >= 2:
             previous = player.in_round(player.round_number - 1)
             player.treatment_words = previous.treatment_words
+            player.treatment_number = previous.treatment_number
         # 最後一回時，選出要實現的報酬
         if player.round_number == C.NUM_ROUNDS:
             select_questionaire(player)
         return {
             "treatment_words": player.treatment_words,
             "waiting_period": player.waiting_period,
-            "gained_amount": player.gained_amount
+            "gained_amount": player.gained_amount,
+            "audio": '{}_{}_{}.m4a'.format(player.gained_amount, player.waiting_period, player.treatment_number)
 	    }
 
 class Survey(Page):
